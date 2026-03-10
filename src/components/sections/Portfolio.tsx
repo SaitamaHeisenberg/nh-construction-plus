@@ -1,30 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon } from "lucide-react";
 
 const filters = ["Tout", "Construction", "Rénovation", "Aménagement", "Design"];
 
-// Placeholders — seront remplacés par de vraies photos
-const projects = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  title: [
-    "Villa Résidentielle", "Immeuble R+4", "Terrassement Zone Nord",
-    "Rénovation Bureau", "Lotissement Yopougon", "Aménagement Paysager",
-    "Construction École", "Second Œuvre Appartement", "VRD Koumassi",
-  ][i],
-  category: [
-    "Construction", "Construction", "Aménagement",
-    "Rénovation", "Aménagement", "Design",
-    "Construction", "Rénovation", "Aménagement",
-  ][i],
-  placeholder: true,
-}));
+type Photo = { id: number; title: string; category: string; src: string };
 
 export default function Portfolio() {
   const [active, setActive] = useState("Tout");
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
-  const filtered = active === "Tout" ? projects : projects.filter((p) => p.category === active);
+  useEffect(() => {
+    fetch("/api/photos")
+      .then((r) => r.json())
+      .then((data) => setPhotos(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  const filtered = active === "Tout" ? photos : photos.filter((p) => p.category === active);
 
   return (
     <section id="realisations" className="py-20 md:py-28 bg-[#001F3F] relative">
@@ -65,41 +59,42 @@ export default function Portfolio() {
         </div>
 
         {/* Grille */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <AnimatePresence>
-            {filtered.map((project) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.35 }}
-                className="group relative rounded-2xl overflow-hidden border border-white/10 bg-white/5 aspect-[4/3] flex items-center justify-center hover:border-[#FF8C00]/40 transition-all duration-300"
-              >
-                {/* Placeholder visuel */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a5c] to-[#001020]" />
-                <div className="relative z-10 flex flex-col items-center gap-3 text-white/30">
-                  <ImageIcon size={40} />
-                  <span className="text-xs">Photo à venir</span>
-                </div>
-
-                {/* Overlay hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#001F3F] via-[#001F3F]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-end p-5">
-                  <div>
-                    <span className="text-[#FF8C00] text-xs font-bold uppercase tracking-widest">{project.category}</span>
-                    <h3 className="text-white font-black text-lg mt-1">{project.title}</h3>
+        {photos.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-20 text-white/30">
+            <ImageIcon size={48} />
+            <p className="text-sm">Les photos seront ajoutées via le panneau d&apos;administration.</p>
+          </div>
+        ) : (
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <AnimatePresence>
+              {filtered.map((photo) => (
+                <motion.div
+                  key={photo.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.35 }}
+                  className="group relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/3] hover:border-[#FF8C00]/40 transition-all duration-300"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.src}
+                    alt={photo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Overlay hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#001F3F] via-[#001F3F]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
+                    <div>
+                      <span className="text-[#FF8C00] text-xs font-bold uppercase tracking-widest">{photo.category}</span>
+                      <h3 className="text-white font-black text-lg mt-1">{photo.title}</h3>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Note placeholders */}
-        <p className="text-center text-white/30 text-xs mt-8">
-          Les photos de réalisations seront ajoutées via le panneau d&apos;administration.
-        </p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </div>
     </section>
   );

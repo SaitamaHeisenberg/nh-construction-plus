@@ -1,6 +1,14 @@
 "use client";
 import { motion } from "framer-motion";
 import { ShieldCheck, Clock, HardHat, Award } from "lucide-react";
+import AnimatedCounter from "@/components/AnimatedCounter";
+
+const stats = [
+  { target: 1, suffix: " an", label: "D'expérience", prefix: "+" },
+  { target: 20, suffix: "+", label: "Projets lancés", prefix: "" },
+  { target: 4, suffix: "", label: "Pôles d'expertise", prefix: "" },
+  { target: 100, suffix: "%", label: "Engagement qualité", prefix: "" },
+];
 
 const values = [
   { icon: Clock, title: "Respect des délais", desc: "Chaque projet livré dans les temps convenus, sans compromis sur la qualité." },
@@ -56,8 +64,28 @@ export default function Apropos() {
             </div>
           </motion.div>
 
-          {/* Valeurs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Chiffres clés */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="bg-white/5 border border-white/10 rounded-xl p-5 text-center hover:border-[#FF8C00]/30 transition-colors"
+                >
+                  <div className="text-3xl md:text-4xl font-black text-[#FF8C00] mb-1">
+                    <AnimatedCounter target={stat.target} suffix={stat.suffix} prefix={stat.prefix} duration={1800} />
+                  </div>
+                  <div className="text-white/50 text-xs uppercase tracking-widest">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Valeurs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {values.map((val, i) => {
               const Icon = val.icon;
               return (
@@ -77,6 +105,7 @@ export default function Apropos() {
                 </motion.div>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
